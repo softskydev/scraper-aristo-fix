@@ -1,0 +1,50 @@
+[
+  {
+    "brand": "RICHARD MILLE",
+    "reference": "RM65-01",
+    "description": "RICHARD MILLE RM65-01",
+    "condition": "New",
+    "product_url": "https://aristohk.com/richard-mille/rm-65-01-mc-laren/22475",
+    "price_usd": null,
+    "price_idr": null,
+    "price_hkd": 3800000,
+    "year": null,
+    "completeness": "With Box, With Papers",
+    "scraped_from": "aristohk.com",
+    "scraped_at": "2025-07-31 06:11:14.691",
+    "product_type": "watches",
+    "created": "2025-07-31 06:11:14.691"
+  },
+  {
+    "brand": "RICHARD MILLE",
+    "reference": "RM11-03",
+    "description": "RICHARD MILLE RM11-03",
+    "condition": "Pre-owned",
+    "product_url": "https://aristohk.com/richard-mille/rm-11-03-mclaren/14695",
+    "price_usd": null,
+    "price_idr": null,
+    "price_hkd": 2750000,
+    "year": 2017,
+    "completeness": "With Box, With Papers",
+    "scraped_from": "aristohk.com",
+    "scraped_at": "2025-07-31 06:11:15.544",
+    "product_type": "watches",
+    "created": "2025-07-31 06:11:15.544"
+  },
+  {
+    "brand": "ROLEX",
+    "reference": "126500LN-0002",
+    "description": "ROLEX 126500LN-0002",
+    "condition": "New",
+    "product_url": "https://aristohk.com/rolex/126500-ln-0002/18692",
+    "price_usd": null,
+    "price_idr": null,
+    "price_hkd": 228000,
+    "year": 2023,
+    "completeness": "With Box, With Papers",
+    "scraped_from": "aristohk.com",
+    "scraped_at": "2025-07-31 06:11:16.395",
+    "product_type": "watches",
+    "created": "2025-07-31 06:11:16.395"
+  }
+]
