@@ -338,35 +338,40 @@ class AristoHKScraper:
             else:
                 condition = "New"  # Default assumption
             
-            # Extract year from Release Year field or other year patterns
-            year_patterns = [
-                r'Release Year[:\s]*(\d{4})',
-                r'released in (\d{4})',
-                r'(\d{4})\s*release',
-                r'Year[:\s]*(\d{4})',
-                r'(\d{4})\s*year'
-            ]
+            # Extract year from Release Year field specifically
+            year = None
             
-            for pattern in year_patterns:
-                year_match = re.search(pattern, all_text, re.I)
-                if year_match:
-                    try:
-                        year = int(year_match.group(1))
-                        # Validate year is reasonable (between 1950 and current year + 5)
-                        if 1950 <= year <= 2030:
-                            break
-                    except ValueError:
-                        continue
+            # Look for "Release Year" field specifically in the product details
+            release_year_pattern = r'Release Year[:\s]*(\d{4})'
+            year_match = re.search(release_year_pattern, all_text, re.I)
+            if year_match:
+                try:
+                    potential_year = int(year_match.group(1))
+                    # Validate year is reasonable (between 1950 and current year + 2)
+                    if 1950 <= potential_year <= 2027:
+                        year = potential_year
+                except ValueError:
+                    pass
             
-            # If no year found in text, try the detailed section
+            # Only if no Release Year found, try other specific year patterns
             if year is None:
-                # Look for 4-digit years that are likely release years
-                year_candidates = re.findall(r'20[0-2][0-9]', all_text)
-                if year_candidates:
-                    # Take the most recent reasonable year
-                    valid_years = [int(y) for y in year_candidates if 2000 <= int(y) <= 2030]
-                    if valid_years:
-                        year = max(valid_years)  # Take the most recent year
+                other_year_patterns = [
+                    r'released in (\d{4})',
+                    r'(\d{4})\s*release',
+                ]
+                
+                for pattern in other_year_patterns:
+                    year_match = re.search(pattern, all_text, re.I)
+                    if year_match:
+                        try:
+                            potential_year = int(year_match.group(1))
+                            if 1950 <= potential_year <= 2027:
+                                year = potential_year
+                                break
+                        except ValueError:
+                            continue
+            
+            # If still no year found, leave as None (don't guess or use current year)
             
             # Extract completeness from Accessories information
             completeness_parts = []
