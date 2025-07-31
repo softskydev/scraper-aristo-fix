@@ -341,7 +341,7 @@ class AristoHKScraper:
             # Extract year from Release Year field specifically
             year = None
             
-            # Look for "Release Year" field specifically in the product details
+            # Look for "Release Year" field specifically in the product details (most accurate)
             release_year_pattern = r'Release Year[:\s]*(\d{4})'
             year_match = re.search(release_year_pattern, all_text, re.I)
             if year_match:
@@ -353,14 +353,20 @@ class AristoHKScraper:
                 except ValueError:
                     pass
             
-            # Only if no Release Year found, try other specific year patterns
+            # If no Release Year found, try other common year patterns
             if year is None:
-                other_year_patterns = [
-                    r'released in (\d{4})',
-                    r'(\d{4})\s*release',
+                year_patterns = [
+                    r'released in (\d{4})',           # "released in 2023"
+                    r'introduced in (\d{4})',         # "introduced in 2020"  
+                    r'(\d{4})\s*release',             # "2023 release"
+                    r'(\d{4})\s*model',               # "2020 model"
+                    r'launched in (\d{4})',           # "launched in 2021"
+                    r'(\d{4})\s*edition',             # "2022 edition"
+                    r'production[:\s]*(\d{4})',       # "production: 2019"
+                    r'year[:\s]*(\d{4})',             # "year: 2018"
                 ]
                 
-                for pattern in other_year_patterns:
+                for pattern in year_patterns:
                     year_match = re.search(pattern, all_text, re.I)
                     if year_match:
                         try:
