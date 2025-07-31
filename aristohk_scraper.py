@@ -247,32 +247,48 @@ class AristoHKScraper:
                 else:
                     brand = brand.upper()
             
-            # Extract reference/model from URL
-            if len(url_parts) >= 4:
+            # Extract reference/model from URL - Special handling for Richard Mille
+            if brand.upper() == 'RICHARD MILLE' and len(url_parts) >= 3:
+                # For Richard Mille, extract model code from URL slug
+                # Convert "/rm-65-01-mc-laren/" to "RM65-01"
+                model_slug = url_parts[2]  # e.g., "rm-65-01-mc-laren"
+                if model_slug.startswith('rm-'):
+                    # Extract the model number part (e.g., "65-01" from "rm-65-01-mc-laren")
+                    model_match = re.search(r'rm-(\d+(?:-\d+)*)', model_slug.lower())
+                    if model_match:
+                        model_number = model_match.group(1).replace('-', '-')  # Keep hyphens
+                        reference = f"RM{model_number}"
+                    else:
+                        reference = model_slug.upper().replace('-', '')
+                else:
+                    reference = model_slug.upper().replace('-', '')
+            elif len(url_parts) >= 4:
                 reference = url_parts[3].upper().replace('-', '')
             
-            # Try to find reference in page title or H1
-            title = soup.find('title')
-            if title:
-                title_text = title.get_text()
-                # Extract model from title like "ROLEX | DAYTONA 126500LN-0002"
-                if '|' in title_text:
-                    parts = title_text.split('|')
+            # For non-Richard Mille brands, use existing logic
+            if brand.upper() != 'RICHARD MILLE':
+                # Try to find reference in page title or H1
+                title = soup.find('title')
+                if title:
+                    title_text = title.get_text()
+                    # Extract model from title like "ROLEX | DAYTONA 126500LN-0002"
+                    if '|' in title_text:
+                        parts = title_text.split('|')
+                        if len(parts) >= 2:
+                            model_part = parts[1].strip()
+                            # Extract the model number
+                            model_match = re.search(r'([A-Z0-9\-]+)$', model_part)
+                            if model_match:
+                                reference = model_match.group(1)
+                
+                # Try H1 for more accurate reference
+                h1 = soup.find('h1')
+                if h1:
+                    h1_text = h1.get_text().strip()
+                    # Extract reference from H1 like "ROLEX 126500LN-0002"
+                    parts = h1_text.split()
                     if len(parts) >= 2:
-                        model_part = parts[1].strip()
-                        # Extract the model number
-                        model_match = re.search(r'([A-Z0-9\-]+)$', model_part)
-                        if model_match:
-                            reference = model_match.group(1)
-            
-            # Try H1 for more accurate reference
-            h1 = soup.find('h1')
-            if h1:
-                h1_text = h1.get_text().strip()
-                # Extract reference from H1 like "ROLEX 126500LN-0002"
-                parts = h1_text.split()
-                if len(parts) >= 2:
-                    reference = parts[-1]  # Take the last part as reference
+                        reference = parts[-1]  # Take the last part as reference
             
             # Extract price - look for the main product price more accurately
             all_text = soup.get_text()
