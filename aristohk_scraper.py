@@ -338,35 +338,38 @@ class AristoHKScraper:
             else:
                 condition = "New"  # Default assumption
             
-            # Extract year from Release Year field specifically
+            # Extract year with improved logic targeting both structured data and description text
             year = None
             
-            # Look for "Release Year" field specifically in the product details (most accurate)
-            release_year_pattern = r'Release Year[:\s]*(\d{4})'
-            year_match = re.search(release_year_pattern, all_text, re.I)
-            if year_match:
-                try:
-                    potential_year = int(year_match.group(1))
-                    # Validate year is reasonable (between 1950 and current year + 2)
-                    if 1950 <= potential_year <= 2027:
-                        year = potential_year
-                except ValueError:
-                    pass
+            # Method 1: Look for structured "Release Year" field (most accurate)
+            # This appears in tables/structured data sections
+            structured_patterns = [
+                r'Release Year[:\s]*(\d{4})',           # "Release Year: 2020" or "Release Year 2020"
+                r'Release Year[:\s]*(\d{4})',           # Case variations
+                r'(?i)release\s*year[:\s]*(\d{4})',     # Case insensitive with optional space
+            ]
             
-            # If no Release Year found, try other common year patterns
+            for pattern in structured_patterns:
+                year_match = re.search(pattern, all_text, re.I)
+                if year_match:
+                    try:
+                        potential_year = int(year_match.group(1))
+                        if 1950 <= potential_year <= 2027:
+                            year = potential_year
+                            break
+                    except ValueError:
+                        continue
+            
+            # Method 2: If no structured Release Year found, look in description text
             if year is None:
-                year_patterns = [
-                    r'released in (\d{4})',           # "released in 2023"
-                    r'introduced in (\d{4})',         # "introduced in 2020"  
-                    r'(\d{4})\s*release',             # "2023 release"
-                    r'(\d{4})\s*model',               # "2020 model"
-                    r'launched in (\d{4})',           # "launched in 2021"
-                    r'(\d{4})\s*edition',             # "2022 edition"
-                    r'production[:\s]*(\d{4})',       # "production: 2019"
-                    r'year[:\s]*(\d{4})',             # "year: 2018"
+                description_patterns = [
+                    r'released in (\d{4})',               # "released in 2023"
+                    r'introduced in (\d{4})',             # "introduced in 2020"  
+                    r'launched in (\d{4})',               # "launched in 2021"
+                    r'this model.*?(\d{4})',              # "This model, ... in 2020"
                 ]
                 
-                for pattern in year_patterns:
+                for pattern in description_patterns:
                     year_match = re.search(pattern, all_text, re.I)
                     if year_match:
                         try:
@@ -377,7 +380,28 @@ class AristoHKScraper:
                         except ValueError:
                             continue
             
-            # If still no year found, leave as None (don't guess or use current year)
+            # Method 3: As final fallback, look for years in specific contexts 
+            # (but avoid recent years like 2025 which are likely copyright/current year)
+            if year is None:
+                contextual_patterns = [
+                    r'(\d{4})\s*model',                   # "2020 model"
+                    r'(\d{4})\s*edition',                 # "2019 edition"
+                    r'production[:\s]*(\d{4})',           # "production: 2018"
+                ]
+                
+                for pattern in contextual_patterns:
+                    year_match = re.search(pattern, all_text, re.I)
+                    if year_match:
+                        try:
+                            potential_year = int(year_match.group(1))
+                            # Be more restrictive for contextual matches - avoid current/future years
+                            if 1950 <= potential_year <= 2024:
+                                year = potential_year
+                                break
+                        except ValueError:
+                            continue
+            
+            # If still no year found, leave as None (better than guessing wrong)
             
             # Extract completeness from Accessories information
             completeness_parts = []
